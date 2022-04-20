@@ -2,7 +2,7 @@ service: claimsmade-api
 frameworkVersion: '2 || 3'
 
 custom:
-  secrets: ${file(./configs/secrets.${self:provider.stage}.json)}
+  secrets: ${file(./configs/secrets.test.json)}
   splitStacks:
     perFunction: false
     perType: true
