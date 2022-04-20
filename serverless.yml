@@ -1,0 +1,114 @@
+service: claimsmade-api
+frameworkVersion: '2 || 3'
+
+custom:
+  secrets: ${file(./configs/secrets.${self:provider.stage}.json)}
+  splitStacks:
+    perFunction: false
+    perType: true
+    perGroupFunction: false
+
+provider:
+  name: aws
+  runtime: nodejs12.x
+  lambdaHashingVersion: '20201221'
+  timeout: 30
+  stage: ${opt:stage, 'dev'}
+  environment:
+    NODE_ENV: ${self:custom.secrets.NODE_ENV}
+    DB_NAME: ${self:custom.secrets.DB_NAME}
+    DB_USER: ${self:custom.secrets.DB_USER}
+    DB_PASSWORD: ${self:custom.secrets.DB_PASSWORD}
+    DB_HOST: ${self:custom.secrets.DB_HOST}
+    DB_PORT: ${self:custom.secrets.DB_PORT}
+    JWT_SECRET: ${self:custom.secrets.JWT_SECRET}
+    JWT_EXPIRATION_TIME: ${self:custom.secrets.JWT_EXPIRATION_TIME}
+
+functions:
+  healthCheck:
+    handler: handler.healthCheck
+    events:
+      - http:
+          path: /
+          method: get
+          cors: true
+  signUpUser:
+    handler: rest/users/controller.signUp
+    events:
+      - http:
+         path: users/signup
+         method: post
+         cors: true
+  updateUser:
+    handler: rest/users/controller.update
+    events:
+      - http:
+         path: users/update/{id}
+         method: put
+         cors: true
+  LoginUser:
+    handler: rest/login/controller.login
+    events:
+      - http:
+         path: login
+         method: post
+         cors: true
+  removeUser:
+    handler: rest/users/controller.destroy
+    events:
+     - http:
+         path: users/destroy/{id}
+         method: delete
+         cors: true
+  createUser:
+    handler: rest/users/controller.create
+    events:
+      - http:
+          path: users
+          method: post
+          cors: true
+  getOneUser:
+    handler: rest/users/controller.getOne
+    events:
+      - http:
+          path: users/{id}
+          method: get
+          cors: true
+  getMe:
+    handler: rest/users/controller.getMe
+    events:
+      - http:
+         path: users/me
+         method: get
+         cors: true
+  changePassword:
+    handler: rest/users/controller.changePassword
+    events:
+      - http:
+         path: users/changePassword
+         method: post
+         cors: true
+  getSettings:
+    handler: rest/settings/controller.getSettings
+    events:
+      - http:
+         path: users/getSettings
+         method: get
+         cors: true
+  setSettings:
+    handler: rest/settings/controller.setSettings
+    events:
+      - http:
+         path: users/setSettings
+         method: put
+         cors: true
+  app:
+      handler: rest/index.handler
+      events:
+        - http: ANY rest
+        - http: 'ANY rest/{proxy+}'        
+
+
+plugins:
+  - serverless-offline
+  - serverless-plugin-split-stacks
